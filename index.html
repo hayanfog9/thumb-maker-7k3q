@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>블로그 썸네일 메이커</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="제목만 입력하면 블로그 썸네일 이미지가 바로 만들어져요. 글꼴·색·배경 장식을 고르고 PNG로 저장하세요.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=East+Sea+Dokdo&family=Gaegu:wght@400;700&family=Gowun+Batang:wght@400;700&family=Gugi&family=Jua&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1729;--panel:#16213a;--panel2:#1b2a49;--line:#2a3a5e;--text:#e8eefa;--sub:#9fb0cb;--acc:#22d3ee;--acc2:#0e7490}
+  @media (prefers-color-scheme: light){:root{--bg:#f4f7fb;--panel:#fff;--panel2:#eef3fa;--line:#d5deec;--text:#14203a;--sub:#566784;--acc:#0e7490;--acc2:#67c5d9}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:16px;line-height:1.55}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 16px 70px}
+  h1{font-size:26px;margin:0 0 6px} h1 span{color:var(--acc)}
+  .lead{color:var(--sub);margin:0 0 20px}
+  .grid{display:grid;grid-template-columns:minmax(320px,460px) 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+  label,.lbl{display:block;font-size:13px;color:var(--sub);margin:12px 0 5px}
+  .card>label:first-child{margin-top:0}
+  .sec>.lbl:first-child{margin-top:0}
+  input[type=text],textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px;font:inherit}
+  textarea{resize:vertical;line-height:1.45}
+  input[type=range]{width:100%;accent-color:var(--acc)}
+  .themes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  @media(max-width:520px){.themes{grid-template-columns:repeat(5,1fr)}}
+  .th{height:40px;border-radius:10px;border:3px solid transparent;cursor:pointer;padding:0;position:relative}
+  .th[aria-pressed="true"]{border-color:var(--acc);outline:2px solid var(--panel);outline-offset:-5px}
+  .th.custom::after{content:"+";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;text-shadow:0 0 4px #000}
+  .fonts{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+  .fn{background:var(--panel2);color:var(--text);border:2px solid transparent;border-radius:10px;padding:8px 6px;cursor:pointer;text-align:center;line-height:1.25}
+  .fn[aria-pressed="true"]{border-color:var(--acc)}
+  .fn b{display:block;font-size:19px;font-weight:400;white-space:nowrap}
+  .fn small{display:block;font-size:11.5px;color:var(--sub);margin-top:2px;font-family:"Malgun Gothic",sans-serif}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--panel2);color:var(--text);border:2px solid transparent;border-radius:999px;padding:7px 13px;font:inherit;font-size:14px;cursor:pointer}
+  .chip[aria-pressed="true"]{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 18%,var(--panel2));font-weight:700}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;background:var(--panel2);color:var(--text);border:2px solid transparent;border-radius:10px;padding:8px;font:inherit;cursor:pointer}
+  .seg button[aria-pressed="true"]{border-color:var(--acc);font-weight:700}
+  .colors{display:none;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .colors.on{display:flex}
+  .colors label{margin:0;display:flex;flex-direction:column;gap:4px;font-size:12px}
+  .colors input[type=color]{width:64px;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:2px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  button.act{background:var(--acc);color:#04222a;border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc2);border-radius:10px;padding:10px 14px;font:inherit;cursor:pointer}
+  .preview{position:sticky;top:12px}
+  canvas{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);background:#000}
+  .note{font-size:13px;color:var(--sub);margin-top:10px}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--acc);color:#04222a;padding:9px 18px;border-radius:999px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.on{opacity:1}
+  :focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>블로그 <span>썸네일 메이커</span></h1>
+  <p class="lead">제목을 입력하고 글꼴·색·장식을 고르면 썸네일이 바로 만들어져요. 마음에 들면 PNG로 저장하세요.</p>
+
+  <div class="grid">
+    <div class="card">
+      <label for="title">제목 (줄을 나누려면 Enter)</label>
+      <textarea id="title" rows="3" maxlength="80"></textarea>
+      <label for="sub">부제 (선택)</label>
+      <textarea id="sub" rows="2" maxlength="80"></textarea>
+      <label for="tag">위쪽 작은 글씨 (선택)</label>
+      <input type="text" id="tag" maxlength="30">
+      <label for="brand">아래쪽 블로그 이름 (선택)</label>
+      <input type="text" id="brand" maxlength="30">
+
+      <div class="sec"><div class="lbl">글꼴</div><div class="fonts" id="fonts" role="group" aria-label="글꼴"></div>
+        <div class="note" id="fontnote"></div></div>
+
+      <div class="sec"><div class="lbl">색상 테마</div><div class="themes" id="themes" role="group" aria-label="색상 테마"></div>
+        <div class="colors" id="colors">
+          <label>배경 색 1<input type="color" id="c1"></label><label>배경 색 2<input type="color" id="c2"></label><label>포인트 색<input type="color" id="c3"></label>
+        </div></div>
+
+      <div class="sec"><div class="lbl">배경 장식 (여러 개를 겹쳐 고를 수 있어요)</div><div class="chips" id="decos" role="group" aria-label="배경 장식"></div>
+        <div class="row" style="margin-top:10px"><button type="button" class="ghost" id="shuffle">장식 위치 새로 섞기</button></div></div>
+
+      <div class="sec">
+        <label for="size" style="margin-top:0">크기</label><select id="size"></select>
+        <div class="lbl">글자 정렬</div>
+        <div class="seg" id="align" role="group" aria-label="글자 정렬"><button type="button" data-v="left">왼쪽</button><button type="button" data-v="center">가운데</button></div>
+        <label for="fscale">제목 글자 크기 <span id="fv" style="color:var(--acc)">자동</span></label>
+        <input type="range" id="fscale" min="60" max="110" value="100">
+      </div>
+    </div>
+
+    <div class="preview">
+      <div class="card">
+        <canvas id="cv" aria-label="썸네일 미리보기"></canvas>
+        <div class="row">
+          <button class="act" id="dl">PNG 저장</button>
+          <button class="ghost" id="copy">이미지 복사</button>
+          <button class="ghost" id="share">설정 링크 복사</button>
+        </div>
+        <div id="folderBox" hidden style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+          <div class="lbl" style="margin-top:0">저장 폴더 (선택)</div>
+          <div class="row" style="margin-top:6px;align-items:center">
+            <button class="ghost" id="pickFolder" type="button">폴더 선택</button>
+            <button class="ghost" id="reconnect" type="button" hidden>폴더 다시 연결</button>
+            <button class="ghost" id="unlink" type="button" hidden>연결 해제</button>
+            <span id="folderState" class="note" style="margin:0">연결 안 됨 · PNG 저장은 일반 다운로드로 돼요</span>
+          </div>
+          <div class="note">폴더를 한 번 고르면, PNG 저장을 누를 때마다 그 안의 날짜별 폴더(예: 2026-10-21)에 파일 이름을 붙여 자동으로 정리해요. 글쓰기 도우미와 같은 폴더를 고르면 한곳에 모여요. (Chrome·Edge에서 동작해요)</div>
+        </div>
+        <div class="note">입력한 내용은 이 브라우저 안에서만 처리돼요. 서버로 보내거나 저장하지 않아요. 링크를 복사하면 입력한 글이 링크에 들어가요. 글꼴은 Google Fonts에서 불러오며, 인터넷이 없으면 기본 글꼴로 보여요.</div>
+      </div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:22px">JW의 AI 작업실 · 이 페이지는 AI(Claude)의 도움으로 만들었어요.</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const SANS = '"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+const FONTS = [
+  {id:'sans',  name:'기본 고딕',   t:SANS, tw:800, b:SANS, bw:400, tbw:700, scale:1,    ls:-.02, g:'Noto Sans KR'},
+  {id:'black', name:'굵은 제목체', t:'"Black Han Sans"', tw:400, b:SANS, bw:400, tbw:700, scale:1.05, ls:0, g:'Black Han Sans'},
+  {id:'hyeon', name:'도현체',      t:'"Do Hyeon"', tw:400, b:SANS, bw:400, tbw:700, scale:1.05, ls:0, g:'Do Hyeon'},
+  {id:'jua',   name:'주아 (귀여운)', t:'"Jua"', tw:400, b:'"Jua"', bw:400, tbw:400, scale:1.05, ls:0, g:'Jua'},
+  {id:'serif', name:'명조',        t:'"Noto Serif KR",serif', tw:900, b:'"Noto Serif KR",serif', bw:400, tbw:700, scale:1, ls:-.01, g:'Noto Serif KR'},
+  {id:'batang',name:'고운바탕',    t:'"Gowun Batang",serif', tw:700, b:'"Gowun Batang",serif', bw:400, tbw:700, scale:1.02, ls:0, g:'Gowun Batang'},
+  {id:'pen',   name:'나눔손글씨 펜', t:'"Nanum Pen Script"', tw:400, b:'"Nanum Pen Script"', bw:400, tbw:400, scale:1.35, ls:0, g:'Nanum Pen Script', bscale:1.3},
+  {id:'gaegu', name:'개구 (손글씨)', t:'"Gaegu"', tw:700, b:'"Gaegu"', bw:400, tbw:700, scale:1.18, ls:0, g:'Gaegu', bscale:1.15},
+  {id:'dokdo', name:'동해 독도 (붓글씨)', t:'"East Sea Dokdo"', tw:400, b:SANS, bw:400, tbw:700, scale:1.4, ls:0, g:'East Sea Dokdo'},
+  {id:'gugi',  name:'구기 (레트로)', t:'"Gugi"', tw:400, b:SANS, bw:400, tbw:700, scale:.98, ls:0, g:'Gugi'}
+];
+const THEMES = [
+  {id:'navy',  name:'다크 네이비', c:['#0b1220','#111c33'], g1:'rgba(34,211,238,.32)', g2:'rgba(99,102,241,.35)', text:'#ffffff', sub:'#b6c2d9', acc:'#22d3ee'},
+  {id:'cream', name:'크림 노트',   c:['#fbf6ec','#f1e5cf'], g1:'rgba(217,130,43,.18)', g2:'rgba(217,130,43,.10)', text:'#2b2118', sub:'#6b5b48', acc:'#d9822b'},
+  {id:'white', name:'미니멀 화이트', c:['#ffffff','#eef1f6'], g1:'rgba(37,99,235,.12)', g2:'rgba(37,99,235,.06)', text:'#111827', sub:'#4b5563', acc:'#2563eb'},
+  {id:'sunset',name:'선셋',       c:['#ff7e5f','#7a4bd6'], g1:'rgba(255,255,255,.22)', g2:'rgba(255,214,102,.20)', text:'#ffffff', sub:'rgba(255,255,255,.9)', acc:'#ffffff'},
+  {id:'forest',name:'포레스트',   c:['#0f2a22','#1d4d3c'], g1:'rgba(126,226,168,.22)', g2:'rgba(126,226,168,.10)', text:'#f2fbf6', sub:'#b8d8c8', acc:'#7ee2a8'},
+  {id:'pink',  name:'핑크 파스텔', c:['#ffe5ee','#ffcfe0'], g1:'rgba(224,72,138,.18)', g2:'rgba(255,255,255,.5)', text:'#4a1d33', sub:'#7a4a60', acc:'#e0488a'},
+  {id:'black', name:'블랙 & 옐로', c:['#0a0a0a','#181818'], g1:'rgba(255,214,10,.16)', g2:'rgba(255,214,10,.06)', text:'#ffffff', sub:'#c4c4c4', acc:'#ffd60a'},
+  {id:'ocean', name:'오션',       c:['#06314a','#0b6e8a'], g1:'rgba(158,240,255,.25)', g2:'rgba(158,240,255,.10)', text:'#ffffff', sub:'#d3f4fb', acc:'#9ef0ff'},
+  {id:'mint',  name:'민트',       c:['#d9f6ea','#b6ecd6'], g1:'rgba(31,163,110,.18)', g2:'rgba(255,255,255,.5)', text:'#12392c', sub:'#3d6b5a', acc:'#1fa36e'},
+  {id:'lav',   name:'라벤더',     c:['#f0e9ff','#d8c8ff'], g1:'rgba(124,77,255,.18)', g2:'rgba(255,255,255,.5)', text:'#2d1b5a', sub:'#5a4a85', acc:'#7c4dff'},
+  {id:'peach', name:'피치',       c:['#fff1e7','#ffd5bb'], g1:'rgba(255,107,53,.18)', g2:'rgba(255,255,255,.5)', text:'#4a2412', sub:'#7a4a33', acc:'#ff6b35'},
+  {id:'sky',   name:'스카이',     c:['#e6f3ff','#bddfff'], g1:'rgba(30,136,229,.16)', g2:'rgba(255,255,255,.5)', text:'#0d2b4d', sub:'#3a5f85', acc:'#1e88e5'},
+  {id:'lemon', name:'레몬',       c:['#fffbd9','#fff09c'], g1:'rgba(230,168,0,.18)', g2:'rgba(255,255,255,.5)', text:'#3a3300', sub:'#6b6000', acc:'#e6a800'},
+  {id:'wine',  name:'와인',       c:['#3a0f1f','#6b1b36'], g1:'rgba(255,143,171,.22)', g2:'rgba(255,143,171,.10)', text:'#ffffff', sub:'#f1c9d4', acc:'#ff8fab'},
+  {id:'slate', name:'슬레이트',   c:['#1f2937','#394456'], g1:'rgba(251,191,36,.18)', g2:'rgba(255,255,255,.06)', text:'#ffffff', sub:'#cbd5e1', acc:'#fbbf24'},
+  {id:'neon',  name:'네온 퍼플',  c:['#0d0221','#2b0a5c'], g1:'rgba(255,43,214,.30)', g2:'rgba(34,211,238,.25)', text:'#ffffff', sub:'#d9c8ff', acc:'#ff2bd6'},
+  {id:'paper', name:'페이퍼',     c:['#f5f1e8','#ece6d6'], g1:'rgba(192,57,43,.10)', g2:'rgba(0,0,0,.04)', text:'#222222', sub:'#5c5648', acc:'#c0392b'},
+  {id:'mono',  name:'모노 그레이', c:['#101010','#343434'], g1:'rgba(255,255,255,.14)', g2:'rgba(255,255,255,.06)', text:'#ffffff', sub:'#bdbdbd', acc:'#ffffff'},
+  {id:'coral', name:'코랄',       c:['#ff6b6b','#ff9a76'], g1:'rgba(255,255,255,.25)', g2:'rgba(255,255,255,.12)', text:'#ffffff', sub:'rgba(255,255,255,.92)', acc:'#ffffff'},
+  {id:'aurora',name:'오로라',     c:['#0f2027','#2c5364'], g1:'rgba(80,250,170,.28)', g2:'rgba(120,120,255,.25)', text:'#ffffff', sub:'#cfe8f0', acc:'#6af0b4'},
+  {id:'custom',name:'나만의 색',  c:['#1e3a8a','#7c3aed'], g1:'rgba(255,255,255,.18)', g2:'rgba(255,255,255,.08)', text:'#ffffff', sub:'rgba(255,255,255,.88)', acc:'#fde047', custom:true}
+];
+const DECOS = [
+  {id:'glow', name:'은은한 빛'}, {id:'grid', name:'격자'}, {id:'dots', name:'점 무늬'}, {id:'stripes', name:'대각선 줄무늬'},
+  {id:'waves', name:'물결'}, {id:'blobs', name:'번지는 원'}, {id:'frame', name:'테두리 프레임'}, {id:'sparkle', name:'반짝임'},
+  {id:'circles', name:'원 포인트'}, {id:'grain', name:'종이 질감'}
+];
+const SIZES = [
+  {id:'sq', name:'정사각형 1000×1000 (대표 이미지)', w:1000, h:1000},
+  {id:'wide', name:'가로 1200×630 (SNS 공유)', w:1200, h:630},
+  {id:'port', name:'세로 1080×1350 (4:5)', w:1080, h:1350},
+  {id:'banner', name:'블로그 상단 배너 966×260', w:966, h:260}
+];
+const DEFAULT = {t:'블로그 썸네일\n1분 만에 만들기', u:'제목만 입력하면 바로 완성돼요', g:'BLOG THUMBNAIL', b:'내 블로그', th:'navy', sz:'sq', al:'left', fs:100, f:'sans', dc:['glow','grid','circles'], sd:7, cc:['#1e3a8a','#7c3aed','#fde047']};
+const S = JSON.parse(JSON.stringify(DEFAULT));
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const hexOk = v => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+
+function rng(seed){ let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function rgba(hex, a){ const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')'; }
+function lum(hex){ const n = parseInt(hex.slice(1), 16), f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(n >> 16 & 255) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); }
+function theme(){
+  const T = {...THEMES.find(x => x.id === S.th)};
+  if (T.custom) {
+    T.c = [S.cc[0], S.cc[1]]; T.acc = S.cc[2];
+    const light = (lum(S.cc[0]) + lum(S.cc[1])) / 2 > .35;
+    T.text = light ? '#14203a' : '#ffffff'; T.sub = light ? 'rgba(20,32,58,.78)' : 'rgba(255,255,255,.86)';
+    T.g1 = rgba(S.cc[2], .22); T.g2 = rgba(S.cc[2], .10);
+  }
+  return T;
+}
+function F(){ return FONTS.find(x => x.id === S.f); }
+const titleFont = (fs) => F().tw + ' ' + fs + 'px ' + F().t;
+const bodyFont = (fs, w) => (w || F().bw) + ' ' + fs + 'px ' + F().b;
+
+function wrapLines(text, maxW, fontFn){
+  ctx.font = fontFn; const out = [];
+  String(text).split('\n').forEach(raw => {
+    const line = raw.trim(); if (!line) { out.push(''); return; }
+    if (ctx.measureText(line).width <= maxW) { out.push(line); return; }
+    let cur = '';
+    for (const word of line.split(' ')) {
+      const test = cur ? cur + ' ' + word : word;
+      if (ctx.measureText(test).width <= maxW) { cur = test; continue; }
+      if (cur) { out.push(cur); cur = ''; }
+      if (ctx.measureText(word).width <= maxW) { cur = word; continue; }
+      for (const ch of word) { if (ctx.measureText(cur + ch).width > maxW && cur) { out.push(cur); cur = ''; } cur += ch; }
+    }
+    if (cur) out.push(cur);
+  });
+  return out;
+}
+
+function star(x, y, r, col){ ctx.fillStyle = col; ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? r * .22 : r; ctx.lineTo(x + Math.cos(a - Math.PI / 2) * rr, y + Math.sin(a - Math.PI / 2) * rr); } ctx.closePath(); ctx.fill(); }
+
+function drawBackground(T, W, H, base, pad, has){
+  const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, T.c[0]); g.addColorStop(1, T.c[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const R = rng(S.sd * 9973 + 11), big = Math.max(W, H);
+  const rad = (x, y, r, col) => { const q = ctx.createRadialGradient(x, y, 0, x, y, r); q.addColorStop(0, col); q.addColorStop(1, col.replace(/[\d.]+\)$/, '0)')); ctx.fillStyle = q; ctx.fillRect(0, 0, W, H); };
+  if (has('glow')) { rad(W * .85, 0, big * .55, T.g1); rad(0, H, big * .6, T.g2); }
+  if (has('blobs')) for (let i = 0; i < 4; i++) rad(R() * W, R() * H, big * (.18 + R() * .2), rgba(T.acc, .22));
+  const ink = T.acc;
+  if (has('grid')) { ctx.strokeStyle = rgba(ink, .09); ctx.lineWidth = 1; const st = Math.max(28, Math.round(base * .04)); for (let x = 0; x <= W; x += st) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); } for (let y = 0; y <= H; y += st) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); } }
+  if (has('dots')) { ctx.fillStyle = rgba(ink, .3); const st = Math.max(26, Math.round(base * .045)), r = Math.max(1.6, base * .0033); for (let y = st / 2; y < H; y += st) for (let x = st / 2; x < W; x += st) { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); } }
+  if (has('stripes')) { ctx.strokeStyle = rgba(ink, .13); ctx.lineWidth = Math.max(2, base * .004); const st = Math.max(26, base * .05); for (let k = -H; k < W + H; k += st) { ctx.beginPath(); ctx.moveTo(k, 0); ctx.lineTo(k + H, H); ctx.stroke(); } }
+  if (has('waves')) { [[.80, .16, 1.0, .0], [.87, .12, 1.4, 1.7], [.93, .10, 0.8, 3.2]].forEach(([y0, a, f, ph], i) => { ctx.fillStyle = rgba(ink, .16 - i * .04); ctx.beginPath(); ctx.moveTo(0, H); for (let x = 0; x <= W; x += 6) ctx.lineTo(x, H * y0 + Math.sin(x / W * Math.PI * 2 * f + ph) * H * a * .22); ctx.lineTo(W, H); ctx.closePath(); ctx.fill(); }); }
+  if (has('sparkle')) { const n = Math.round(clamp(W * H / 90000, 6, 16)); for (let i = 0; i < n; i++) star(R() * W, R() * H, base * (.012 + R() * .026), rgba(i % 3 ? ink : '#ffffff', .55 + R() * .35)); }
+  if (has('grain')) { const t = document.createElement('canvas'); t.width = t.height = 160; const tc = t.getContext('2d'), im = tc.createImageData(160, 160), q = rng(5); for (let i = 0; i < im.data.length; i += 4) { const v = q() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 26; } tc.putImageData(im, 0, 0); ctx.fillStyle = ctx.createPattern(t, 'repeat'); ctx.fillRect(0, 0, W, H); }
+  if (has('frame')) { const m = pad * .45; ctx.strokeStyle = rgba(ink, .75); ctx.lineWidth = Math.max(2, base * .004); ctx.strokeRect(m, m, W - m * 2, H - m * 2); const s = Math.max(8, base * .018); ctx.fillStyle = ink; [[m, m], [W - m, m], [m, H - m], [W - m, H - m]].forEach(([x, y]) => ctx.fillRect(x - s / 2, y - s / 2, s, s)); }
+}
+
+function draw(){
+  const T = theme(), Z = SIZES.find(x => x.id === S.sz), W = Z.w, H = Z.h, ff = F(), has = id => S.dc.includes(id);
+  cv.width = W; cv.height = H;
+  const base = Math.min(W, H), pad = clamp(base * .09, 36, 100) + (has('frame') ? clamp(base * .015, 4, 14) : 0), maxW = W - pad * 2;
+  drawBackground(T, W, H, base, pad, has);
+  const center = S.al === 'center', ax = center ? W / 2 : pad; ctx.textAlign = center ? 'center' : 'left'; ctx.textBaseline = 'alphabetic';
+  const bs = ff.bscale || 1, tagFs = clamp(base * .03, 13, 30) * bs, subFs = clamp(base * .04, 17, 40) * bs, brandFs = clamp(base * .034, 14, 34) * bs, gap = Math.max(10, base * .03);
+  const tag = S.g.trim(), brand = S.b.trim(), sub = S.u.trim(), showBrand = brand && H >= 300;
+  const y0 = pad + (tag ? tagFs + gap : 0), y1 = H - pad - (showBrand ? brandFs + gap : 0);
+  if (tag) { ctx.fillStyle = T.acc; ctx.font = bodyFont(tagFs, ff.tbw); ctx.letterSpacing = Math.round(tagFs * .3) + 'px'; ctx.fillText(tag, ax + (center ? Math.round(tagFs * .15) : 0), pad + tagFs * .85); ctx.letterSpacing = '0px'; }
+  const subLines = sub ? wrapLines(sub, maxW, bodyFont(subFs)) : [], subH = subLines.length * subFs * 1.5;
+  const lineH = Math.max(4, base * .006), accGap = sub ? gap * 1.6 : 0, availH = Math.max(40, y1 - y0);
+  let fs = clamp(base * .115 * ff.scale * S.fs / 100, 24, 190), lines = [];
+  for (; fs >= 20; fs -= 2) {
+    lines = wrapLines(S.t, maxW, titleFont(fs)); ctx.font = titleFont(fs);
+    const fit = lines.every(l => ctx.measureText(l).width <= maxW + 1);
+    if (fit && lines.length * fs * 1.25 + (sub ? gap + lineH + accGap + subH : 0) <= availH) break;
+  }
+  const titleH = lines.length * fs * 1.25, total = titleH + (sub ? gap + lineH + accGap + subH : 0);
+  let y = y0 + Math.max(0, (availH - total) / 2);
+  ctx.fillStyle = T.text; ctx.font = titleFont(fs); ctx.letterSpacing = Math.round(fs * ff.ls) + 'px';
+  lines.forEach((l, i) => ctx.fillText(l, ax, y + fs * .98 + i * fs * 1.25)); ctx.letterSpacing = '0px'; y += titleH;
+  if (sub) {
+    y += gap; ctx.fillStyle = T.acc; const lw = clamp(base * .12, 60, 130); ctx.fillRect(center ? W / 2 - lw / 2 : pad, y, lw, lineH); y += lineH + accGap;
+    ctx.fillStyle = T.sub; ctx.font = bodyFont(subFs); subLines.forEach((l, i) => ctx.fillText(l, ax, y + subFs * .95 + i * subFs * 1.5));
+  }
+  if (showBrand) { ctx.font = bodyFont(brandFs, ff.tbw); ctx.fillStyle = T.text; ctx.fillText(brand, ax, H - pad); }
+  if (has('circles') && W >= H * .9) {
+    const r = base * .028, px = W - pad - (has('frame') ? 0 : 0); ctx.fillStyle = T.acc; ctx.beginPath(); ctx.arc(px - r, H - pad - r, r, 0, 7); ctx.fill();
+    ctx.lineWidth = Math.max(2, base * .004); ctx.strokeStyle = T.acc; ctx.globalAlpha = .6; ctx.beginPath(); ctx.arc(px - r * 4.2, H - pad - r * 3.2, r * .5, 0, 7); ctx.stroke();
+    ctx.globalAlpha = .45; ctx.beginPath(); ctx.arc(px - r * .6, H - pad - r * 5.6, r * 1.3, 0, 7); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  $('fv').textContent = S.fs === 100 ? '자동' : S.fs + '%';
+  try { history.replaceState(null, '', '#d=' + encodeURIComponent(JSON.stringify(S))); } catch (e) {}
+}
+
+// 선택한 글꼴을 불러온 뒤 다시 그린다 (인터넷이 없으면 기본 글꼴로 계속 보인다)
+let loadTok = 0;
+function loadFonts(){
+  const tok = ++loadTok, ff = F(), sample = (S.t + S.u + S.g + S.b + '가나다ABC');
+  if (!document.fonts || !document.fonts.load) return;
+  const jobs = [document.fonts.load(titleFont(48), sample), document.fonts.load(bodyFont(24), sample), document.fonts.load(bodyFont(24, ff.tbw), sample)];
+  Promise.all(jobs).then(() => { if (tok === loadTok) draw(); }).catch(() => {});
+}
+function render(){ draw(); loadFonts(); }
+// 글꼴 파일은 글자 범위별로 나뉘어 도착하므로, 한 조각이 도착할 때마다 다시 그려서 섞여 보이지 않게 한다
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => draw());
+
+// ---- 화면 만들기 ----
+FONTS.forEach(f => { const b = document.createElement('button'); b.type = 'button'; b.className = 'fn'; b.dataset.v = f.id; b.innerHTML = '<b></b><small></small>'; b.firstChild.textContent = '가나다 Abc'; b.firstChild.style.fontFamily = f.t; b.lastChild.textContent = f.name; b.onclick = () => { S.f = f.id; sync(); }; $('fonts').appendChild(b); });
+THEMES.forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.className = 'th' + (t.custom ? ' custom' : ''); b.title = t.name; b.setAttribute('aria-label', t.name); b.dataset.v = t.id; b.style.background = 'linear-gradient(135deg,' + t.c[0] + ',' + t.c[1] + ')'; b.onclick = () => { S.th = t.id; sync(); }; $('themes').appendChild(b); });
+DECOS.forEach(d => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.v = d.id; b.textContent = d.name; b.onclick = () => { S.dc = S.dc.includes(d.id) ? S.dc.filter(x => x !== d.id) : [...S.dc, d.id]; sync(); }; $('decos').appendChild(b); });
+SIZES.forEach(z => { const o = document.createElement('option'); o.value = z.id; o.textContent = z.name; $('size').appendChild(o); });
+$('title').oninput = e => { S.t = e.target.value; render(); };
+$('sub').oninput = e => { S.u = e.target.value; render(); };
+$('tag').oninput = e => { S.g = e.target.value; render(); };
+$('brand').oninput = e => { S.b = e.target.value; render(); };
+$('size').onchange = e => { S.sz = e.target.value; draw(); };
+$('fscale').oninput = e => { S.fs = +e.target.value; draw(); };
+['c1', 'c2', 'c3'].forEach((id, i) => $(id).oninput = e => { S.cc[i] = e.target.value; draw(); });
+$('shuffle').onclick = () => { S.sd = (S.sd * 31 + 17) % 100000; draw(); };
+document.querySelectorAll('#align button').forEach(b => b.onclick = () => { S.al = b.dataset.v; sync(); });
+function sync(){
+  document.querySelectorAll('.fn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.f)));
+  document.querySelectorAll('.th').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.th)));
+  document.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(S.dc.includes(b.dataset.v))));
+  document.querySelectorAll('#align button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.al)));
+  $('colors').classList.toggle('on', S.th === 'custom'); $('c1').value = S.cc[0]; $('c2').value = S.cc[1]; $('c3').value = S.cc[2];
+  $('title').value = S.t; $('sub').value = S.u; $('tag').value = S.g; $('brand').value = S.b; $('size').value = S.sz; $('fscale').value = S.fs;
+  $('fontnote').textContent = '선택한 글꼴: ' + F().name;
+  render();
+}
+function toast(t){ const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 1600); }
+const blobOf = () => new Promise(res => cv.toBlob(res, 'image/png'));
+// ---- 저장 폴더 (File System Access API: Chrome·Edge). 폴더 연결은 이 브라우저에만 기억돼요 ----
+const FS = typeof window.showDirectoryPicker === 'function';
+let dirHandle = null;
+const idb = {
+  open(){ return new Promise((res, rej) => { const r = indexedDB.open('thumbmaker', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async get(k){ const db = await this.open(); return new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); },
+  async set(k, v){ const db = await this.open(); return new Promise((res, rej) => { const q = db.transaction('kv', 'readwrite').objectStore('kv').put(v, k); q.onsuccess = () => res(); q.onerror = () => rej(q.error); }); },
+  async del(k){ const db = await this.open(); return new Promise((res, rej) => { const q = db.transaction('kv', 'readwrite').objectStore('kv').delete(k); q.onsuccess = () => res(); q.onerror = () => rej(q.error); }); }
+};
+const OPT = {mode: 'readwrite'};
+async function permState(h, ask){
+  if (!h.queryPermission) return 'granted';
+  let p = await h.queryPermission(OPT);
+  if (p !== 'granted' && ask && h.requestPermission) p = await h.requestPermission(OPT);
+  return p;
+}
+async function refreshFolderUI(){
+  if (!FS) return; $('folderBox').hidden = false;
+  const st = $('folderState'); $('unlink').hidden = !dirHandle; $('reconnect').hidden = true;
+  if (!dirHandle) { st.textContent = '연결 안 됨 · PNG 저장은 일반 다운로드로 돼요'; $('pickFolder').textContent = '폴더 선택'; return; }
+  $('pickFolder').textContent = '폴더 바꾸기';
+  let p = 'prompt'; try { p = await permState(dirHandle, false); } catch (e) {}
+  if (p === 'granted') st.textContent = '연결됨 · ' + dirHandle.name + ' 폴더에 날짜별로 저장돼요';
+  else { st.textContent = '“' + dirHandle.name + '” 폴더 접근을 다시 허용해야 해요'; $('reconnect').hidden = false; }
+}
+$('pickFolder').onclick = async () => {
+  try { const h = await window.showDirectoryPicker({mode: 'readwrite'}); dirHandle = h; await idb.set('dir', h); toast('저장 폴더를 연결했어요'); }
+  catch (e) { if (e && e.name !== 'AbortError') toast('폴더를 연결하지 못했어요'); }
+  refreshFolderUI();
+};
+$('reconnect').onclick = async () => { try { await permState(dirHandle, true); } catch (e) {} refreshFolderUI(); };
+$('unlink').onclick = async () => { dirHandle = null; try { await idb.del('dir'); } catch (e) {} toast('폴더 연결을 해제했어요'); refreshFolderUI(); };
+(async () => { if (!FS) return; try { dirHandle = (await idb.get('dir')) || null; } catch (e) { dirHandle = null; } refreshFolderUI(); })();
+
+const pad2 = n => String(n).padStart(2, '0');
+function fileName(){
+  const d = new Date(), z = SIZES.find(x => x.id === S.sz);
+  const slug = (S.t.split('\n')[0] || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').trim().replace(/\s+/g, '_').slice(0, 20) || 'untitled';
+  return '썸네일_' + pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()) + '_' + slug + '_' + z.w + 'x' + z.h + '.png';
+}
+async function saveToFolder(blob, name){
+  if ((await permState(dirHandle, true)) !== 'granted') throw new Error('permission');
+  const d = new Date(), day = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  const dayDir = await dirHandle.getDirectoryHandle(day, {create: true});
+  let fn = name, n = 2;
+  for (;;) { try { await dayDir.getFileHandle(fn); fn = name.replace(/\.png$/, '') + '_' + n++ + '.png'; } catch (e) { break; } } // 같은 이름이 있으면 덮어쓰지 않고 번호를 붙인다
+  const w = await (await dayDir.getFileHandle(fn, {create: true})).createWritable(); await w.write(blob); await w.close();
+  return day + '/' + fn;
+}
+$('dl').onclick = async () => {
+  const blob = await blobOf(), name = fileName();
+  if (FS && dirHandle) {
+    try { const where = await saveToFolder(blob, name); toast('폴더에 저장했어요 · ' + where); refreshFolderUI(); return; }
+    catch (e) { toast('폴더에 저장하지 못해서 다운로드로 저장해요'); refreshFolderUI(); }
+  }
+  const a = document.createElement('a'); a.download = name; a.href = URL.createObjectURL(blob); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); toast('PNG를 저장했어요');
+};
+$('copy').onclick = async () => { try { await navigator.clipboard.write([new ClipboardItem({'image/png': blobOf()})]); toast('이미지를 복사했어요'); } catch (e) { toast('복사가 안 돼요. PNG 저장을 이용해 주세요'); } };
+$('share').onclick = async () => { try { await navigator.clipboard.writeText(location.href); toast('설정 링크를 복사했어요'); } catch (e) { toast('복사하지 못했어요'); } };
+
+// 링크의 #d=설정 복원 (값은 모두 검증해서 안전한 것만 사용)
+(function(){
+  try {
+    const m = location.hash.match(/^#d=(.+)$/);
+    if (m) {
+      const d = JSON.parse(decodeURIComponent(m[1])), str = (v, n) => typeof v === 'string' ? v.slice(0, n) : null;
+      if (str(d.t, 80) !== null) S.t = str(d.t, 80); if (str(d.u, 80) !== null) S.u = str(d.u, 80); if (str(d.g, 30) !== null) S.g = str(d.g, 30); if (str(d.b, 30) !== null) S.b = str(d.b, 30);
+      if (THEMES.some(x => x.id === d.th)) S.th = d.th; if (SIZES.some(x => x.id === d.sz)) S.sz = d.sz; if (FONTS.some(x => x.id === d.f)) S.f = d.f;
+      if (d.al === 'left' || d.al === 'center') S.al = d.al; if (Number.isFinite(d.fs)) S.fs = clamp(Math.round(d.fs), 60, 110); if (Number.isFinite(d.sd)) S.sd = clamp(Math.round(d.sd), 0, 99999);
+      if (Array.isArray(d.dc)) S.dc = d.dc.filter(x => DECOS.some(y => y.id === x));
+      if (Array.isArray(d.cc) && d.cc.length === 3 && d.cc.every(hexOk)) S.cc = d.cc.slice();
+    }
+  } catch (e) {}
+  sync();
+})();
+</script>
+</body>
+</html>
